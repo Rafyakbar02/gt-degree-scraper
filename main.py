@@ -96,18 +96,6 @@ def get_master_programs():
 
     print(programs)
 
-
-def get_masters_degree_type():
-    url = "https://catalog.gatech.edu/programs/#masterstext"
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, "html.parser")
-    degree_type = []
-
-    for li in soup.find(id="masterstextcontainer").find_all("li"):
-        degree_type.append(li.find('a').text)
-
-    return set(degree_type)
-
     
 def get_doctor_programs():
     programs = get_all_programs()
