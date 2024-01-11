@@ -63,7 +63,7 @@ def simple_degree(link):
         return True
     
     
-def get_bachelor_programs():
+def get_bachelors_programs():
     url = "https://catalog.gatech.edu/programs/"
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -80,7 +80,7 @@ def get_bachelor_programs():
     print(programs)
 
 
-def get_master_programs():
+def get_masters_programs():
     url = "https://catalog.gatech.edu/programs/"
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -97,13 +97,21 @@ def get_master_programs():
     print(programs)
 
     
-def get_doctor_programs():
-    programs = get_all_programs()
+def get_doctoral_programs():
+    url = "https://catalog.gatech.edu/programs/"
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    div = soup.find(id="doctoraltextcontainer")
 
-    for major, val in programs.items():
-        for college_level in val:
-            if college_level == 'PhD':
-                print(major)
+    programs = []
+
+    for li in div.find_all("li"):
+        curr_link = li.text
+        end = curr_link.find('.')
+        major = curr_link[:end]
+        programs.append(major)
+
+    print(programs)
 
 
 def get_offering(program):
@@ -133,4 +141,4 @@ def get_total_credit_hours(program, degree):
     print(hour, "credit hours")
 
 
-get_master_programs()
+get_doctoral_programs()
