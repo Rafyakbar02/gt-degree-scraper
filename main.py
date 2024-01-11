@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 
+
 def get_all_programs():
     url = "https://catalog.gatech.edu/programs/"
     page = requests.get(url)
@@ -63,12 +64,20 @@ def simple_degree(link):
     
     
 def get_bachelor_programs():
-    programs = get_all_programs()
+    url = "https://catalog.gatech.edu/programs/"
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    div = soup.find(id="bachelorstextcontainer")
 
-    for major, val in programs.items():
-        for college_level in val:
-            if college_level == 'BS':
-                print(major)
+    programs = []
+
+    for li in div.find_all("li"):
+        curr_link = li.text
+        end = curr_link.find('.')
+        major = curr_link[:end]
+        programs.append(major)
+
+    print(programs)
 
 
 def get_master_programs():
