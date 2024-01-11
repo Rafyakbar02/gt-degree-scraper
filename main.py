@@ -114,6 +114,23 @@ def get_doctoral_programs():
     print(programs)
 
 
+def get_minors_programs():
+    url = "https://catalog.gatech.edu/programs/"
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    div = soup.find(id="minorstextcontainer")
+
+    programs = []
+
+    for li in div.find_all("li"):
+        curr_link = li.text
+        end = curr_link.find('.')
+        major = curr_link[:end]
+        programs.append(major)
+
+    print(programs)
+
+
 def get_offering(program):
     programs_dict = get_all_programs()
     
@@ -140,5 +157,3 @@ def get_total_credit_hours(program, degree):
     hour = tr.find_all('td')[1].text
     print(hour, "credit hours")
 
-
-get_doctoral_programs()
