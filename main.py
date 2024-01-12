@@ -33,16 +33,6 @@ def get_all_programs():
 
 
 def get_courses(program, degree):
-    programs = get_all_programs()
-
-    if program not in programs.keys():
-        print("Program not found")
-        return
-
-    if degree not in programs[program]:
-        print("Degree of program not found")
-        return
-
     url = "https://catalog.gatech.edu/programs/"
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -54,18 +44,25 @@ def get_courses(program, degree):
     elif degree == "PhD":
         div = soup.find(id="doctoraltextcontainer")
     else:
-        print("Not supported yet")
+        print("Not yet implemented")
         return
 
     for li in div.find_all("li"):
         curr_link = li.text
         end = curr_link.find('.')
         if curr_link[:end] == program:
-            url += li.a['href'][10:]
-            break
+            for a in li.find_all("a"):
+                curr_degree = a.text
+                if curr_degree == degree:
+                    url += a['href'][10:]
+                    break
+
+    if url == "https://catalog.gatech.edu/programs/":
+        print("Program or degree not found")
+        return
 
     if not simple_degree(url):
-        print("Not implemented")
+        print("Not yet implemented")
         return
 
     page = requests.get(url)
@@ -175,16 +172,6 @@ def get_offering(program):
 
 
 def get_total_credit_hours(program, degree):
-    programs = get_all_programs()
-
-    if program not in programs.keys():
-        print("Program not found")
-        return
-
-    if degree not in programs[program]:
-        print("Degree of program not found")
-        return
-
     url = "https://catalog.gatech.edu/programs/"
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -196,18 +183,25 @@ def get_total_credit_hours(program, degree):
     elif degree == "PhD":
         div = soup.find(id="doctoraltextcontainer")
     else:
-        print("Not supported yet")
+        print("Not yet implemented")
         return
 
     for li in div.find_all("li"):
         curr_link = li.text
         end = curr_link.find('.')
         if curr_link[:end] == program:
-            url += li.a['href'][10:]
-            break
+            for a in li.find_all("a"):
+                curr_degree = a.text
+                if curr_degree == degree:
+                    url += a['href'][10:]
+                    break
+
+    if url == "https://catalog.gatech.edu/programs/":
+        print("Program or degree not found")
+        return
 
     if not simple_degree(url):
-        print("Not implemented")
+        print("Not yet implemented")
         return
 
     page = requests.get(url)
@@ -217,5 +211,3 @@ def get_total_credit_hours(program, degree):
 
     return hour
 
-
-print(get_total_credit_hours("Architecture", "BS"))
