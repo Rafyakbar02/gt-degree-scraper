@@ -33,36 +33,9 @@ def get_all_programs():
 
 
 def get_courses(program, degree):
-    url = "https://catalog.gatech.edu/programs/"
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, "html.parser")
+    url = program_link(program, degree)
 
-    if degree == "BS":
-        div = soup.find(id="bachelorstextcontainer")
-    elif degree in masters:
-        div = soup.find(id="masterstextcontainer")
-    elif degree == "PhD":
-        div = soup.find(id="doctoraltextcontainer")
-    else:
-        print("Not yet implemented")
-        return
-
-    for li in div.find_all("li"):
-        curr_link = li.text
-        end = curr_link.find('.')
-        if curr_link[:end] == program:
-            for a in li.find_all("a"):
-                curr_degree = a.text
-                if curr_degree == degree:
-                    url += a['href'][10:]
-                    break
-
-    if url == "https://catalog.gatech.edu/programs/":
-        print("Program or degree not found")
-        return
-
-    if not simple_degree(url):
-        print("Not yet implemented")
+    if url is None:
         return
 
     page = requests.get(url)
@@ -172,6 +145,20 @@ def get_offering(program):
 
 
 def get_total_credit_hours(program, degree):
+    url = program_link(program, degree)
+
+    if url is None:
+        return
+
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    tr = soup.find_all('tr', {"class": "listsum"})[0]
+    hour = tr.find_all('td')[1].text
+
+    return hour
+
+
+def program_link(program, degree):
     url = "https://catalog.gatech.edu/programs/"
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -204,10 +191,4 @@ def get_total_credit_hours(program, degree):
         print("Not yet implemented")
         return
 
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, "html.parser")
-    tr = soup.find_all('tr', {"class": "listsum"})[0]
-    hour = tr.find_all('td')[1].text
-
-    return hour
-
+    return url
