@@ -8,6 +8,12 @@ masters = ["MS", "PMASE", "M.Arch", "MBID", "MBA", "MCRP", "M.ID", "PMML", "MS (
 
 
 def get_all_programs():
+    """
+    Get list of all programs currently offered in Georgia Institute of Technology
+
+    :returns: dictionary of program with the value of a list of available degrees
+    """
+
     page = requests.get(main_url)
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="alltextcontainer")
@@ -33,6 +39,14 @@ def get_all_programs():
 
 
 def get_courses(program, degree):
+    """
+    Get list of possible courses that can be taken to fulfill degree requirement
+
+    :param program: program name
+    :param degree: degree name
+    :return: list of courses
+    """
+
     url = program_link(program, degree)
 
     if url is None:
@@ -59,6 +73,13 @@ def get_courses(program, degree):
 
 
 def simple_degree(link):
+    """
+    Check if degree contains concentrations or threads
+
+    :param link: URL link of the program
+    :return: true if degree is simple, false if not
+    """
+
     page = requests.get(link)
     soup = BeautifulSoup(page.content, "html.parser")
     if soup.find(id="requirementstextcontainer") is None:
@@ -68,6 +89,12 @@ def simple_degree(link):
     
     
 def get_bachelors_programs():
+    """
+    Get list of all bachelors programs currently offered in Georgia Institute of Technology
+
+    :return: list of bachelors programs
+    """
+
     page = requests.get(main_url)
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="bachelorstextcontainer")
@@ -80,10 +107,16 @@ def get_bachelors_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    print(programs)
+    return programs
 
 
 def get_masters_programs():
+    """
+    Get list of all masters programs currently offered in Georgia Institute of Technology
+
+    :return: list of masters programs
+    """
+
     page = requests.get(main_url)
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="masterstextcontainer")
@@ -96,10 +129,16 @@ def get_masters_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    print(programs)
+    return programs
 
     
 def get_doctoral_programs():
+    """
+    Get list of all doctoral programs currently offered in Georgia Institute of Technology
+
+    :return: list of doctoral programs
+    """
+
     page = requests.get(main_url)
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="doctoraltextcontainer")
@@ -112,10 +151,16 @@ def get_doctoral_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    print(programs)
+    return programs
 
 
 def get_minors_programs():
+    """
+    Get list of all minors programs currently offered in Georgia Institute of Technology
+
+    :return: list of minors programs
+    """
+
     page = requests.get(main_url)
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="minorstextcontainer")
@@ -128,10 +173,18 @@ def get_minors_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    print(programs)
+    return programs
 
 
 def get_total_credit_hours(program, degree):
+    """
+    Get total credit hours required to complete the program degree requirement
+
+    :param program: program name
+    :param degree: degree type
+    :return: amount of credit hours
+    """
+
     url = program_link(program, degree)
 
     if url is None:
@@ -146,6 +199,14 @@ def get_total_credit_hours(program, degree):
 
 
 def program_link(program, degree):
+    """
+    Get link of the program and degree pair
+
+    :param program: program name
+    :param degree: degree type
+    :return: URL of the program
+    """
+
     page = requests.get(main_url)
     soup = BeautifulSoup(page.content, "html.parser")
 
