@@ -175,11 +175,36 @@ def get_offering(program):
 
 
 def get_total_credit_hours(program, degree):
-    if get_offering(program) is None or degree not in get_offering(program):
-        print("Not Found")
+    programs = get_all_programs()
+
+    if program not in programs.keys():
+        print("Program not found")
         return
-    
-    url = get_offering(program)[degree]
+
+    if degree not in programs[program]:
+        print("Degree of program not found")
+        return
+
+    url = "https://catalog.gatech.edu/programs/"
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    if degree == "BS":
+        div = soup.find(id="bachelorstextcontainer")
+    elif degree in masters:
+        div = soup.find(id="masterstextcontainer")
+    elif degree == "PhD":
+        div = soup.find(id="doctoraltextcontainer")
+    else:
+        print("Not supported yet")
+        return
+
+    for li in div.find_all("li"):
+        curr_link = li.text
+        end = curr_link.find('.')
+        if curr_link[:end] == program:
+            url += li.a['href'][10:]
+            break
 
     if not simple_degree(url):
         print("Not implemented")
@@ -189,7 +214,8 @@ def get_total_credit_hours(program, degree):
     soup = BeautifulSoup(page.content, "html.parser")
     tr = soup.find_all('tr', {"class": "listsum"})[0]
     hour = tr.find_all('td')[1].text
-    print(hour, "credit hours")
+
+    return hour
 
 
-print(get_courses("Architecture", "BS"))
+print(get_total_credit_hours("Architecture", "BS"))
