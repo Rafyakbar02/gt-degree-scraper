@@ -29,8 +29,6 @@ def get_all_programs():
 
         for a in li.find_all("a"):
             course_level = a.text
-            # link = a.get('href')[10:]
-            # college_level[course_level] = url + link
             college_degrees.append(course_level)
 
         programs[major] = college_degrees
@@ -54,32 +52,26 @@ def get_concentrations(program, degree):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
 
-    concentrations = []
+    div = None
 
-    if soup.find(id="concentrationstextcontainer") or soup.find(id="standardandconcentrationoptiontextcontainer"):
+    if soup.find(id="concentrationstextcontainer"):
         div = soup.find(id="concentrationstextcontainer")
-        if div is None:
-            div = soup.find(id="standardandconcentrationoptiontextcontainer")
-
-        for a in div.find_all("a"):
-            if a.text == "":
-                continue
-            concentrations.append(a.text)
-
-        return concentrations
-
+    elif soup.find(id="standardandconcentrationoptiontextcontainer"):
+        div = soup.find(id="standardandconcentrationoptiontextcontainer")
     elif soup.find(id="threadstextcontainer"):
         div = soup.find(id="threadstextcontainer")
-
-        for a in div.find_all("a"):
-            if a.text == "":
-                continue
-            concentrations.append(a.text)
-
-        return concentrations
     else:
         print("Program and degree pair doesn't have concentrations/threads")
         return
+
+    concentrations = []
+
+    for a in div.find_all("a"):
+        if a.text == "":
+            continue
+        concentrations.append(a.text)
+
+    return concentrations
 
 
 def get_courses(program, degree):
