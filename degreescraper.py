@@ -70,8 +70,13 @@ def get_concentrations(program, degree):
 
     elif soup.find(id="threadstextcontainer"):
         div = soup.find(id="threadstextcontainer")
-        print("Not implemented")
-        return
+
+        for a in div.find_all("a"):
+            if a.text == "":
+                continue
+            concentrations.append(a.text)
+
+        return concentrations
     else:
         print("Program and degree pair doesn't have concentrations/threads")
         return
