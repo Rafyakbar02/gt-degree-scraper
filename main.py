@@ -38,6 +38,44 @@ def get_all_programs():
     return programs
 
 
+def get_concentrations(program, degree):
+    """
+    Get list of concentrations/threads within the program and degree pair
+
+    :param program: program name
+    :param degree: degree name
+    :return: list of concentrations
+    """
+    url = program_link(program, degree)
+
+    if url is None:
+        return
+
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    concentrations = []
+
+    if soup.find(id="concentrationstextcontainer"):
+        div = soup.find(id="concentrationstextcontainer")
+        if div is None:
+            div = soup.find(id="standardconcentrationoptiontextcontainer")
+
+        for a in div.find_all("a"):
+            if a.text == "":
+                continue
+            concentrations.append(a.text)
+
+        return concentrations
+
+    elif soup.find(id="threadstextcontainer"):
+        div = soup.find(id="threadstextcontainer")
+        print("Not implemented")
+    else:
+        print("Program and degree pair doesn't have concentrations/threads")
+        return
+
+
 def get_courses(program, degree):
     """
     Get list of possible courses that can be taken to fulfill degree requirement
@@ -55,6 +93,10 @@ def get_courses(program, degree):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     tbody = soup.find('tbody')
+
+    if tbody is None:
+        print("Not implemented")
+        return
 
     courses = []
 
@@ -236,8 +278,6 @@ def program_link(program, degree):
         print("Program or degree not found")
         return
 
-    if not simple_degree(url):
-        print("Not yet implemented")
-        return
-
     return url
+
+print(get_concentrations("Materials Science and Engineering", "BS"))
