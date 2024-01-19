@@ -44,7 +44,7 @@ def get_concentrations(program, degree):
     :param degree: degree name
     :return: list of concentrations
     """
-    url = program_link(program, degree)
+    url = _program_link(program, degree)
 
     if url is None:
         return
@@ -82,8 +82,7 @@ def get_courses(program, degree):
     :param degree: degree name
     :return: list of courses
     """
-
-    url = program_link(program, degree)
+    url = _program_link(program, degree)
 
     if url is None:
         return
@@ -112,7 +111,45 @@ def get_courses(program, degree):
     return courses
 
 
-def simple_degree(link):
+def get_courses(program, degree, concentration):
+    """
+    Get list of possible courses that can be taken to fulfill degree requirement with the specified concentration
+
+    :param program: program name
+    :param degree: degree name
+    :param concentration: concentration name
+    :return: list of courses
+    """
+    url = _concentration_link(program, degree, concentration)
+
+    if url is None:
+        return
+
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    tbody = soup.find('tbody')
+
+    if tbody is None:
+        print("Not implemented")
+        return
+
+    courses = []
+
+    for tr in tbody.find_all('tr'):
+        if 'areaheader' in tr['class']:
+            continue
+
+        course_code = tr.find('a')
+
+        if course_code is None:
+            continue
+
+        courses.append(course_code.text.replace("\xa0", " "))
+
+    return courses
+
+
+def _simple_degree(link):
     """
     Check if degree contains concentrations or threads
 
@@ -225,7 +262,7 @@ def get_total_credit_hours(program, degree):
     :return: amount of credit hours
     """
 
-    url = program_link(program, degree)
+    url = _program_link(program, degree)
 
     if url is None:
         return
@@ -238,7 +275,7 @@ def get_total_credit_hours(program, degree):
     return hour
 
 
-def program_link(program, degree):
+def _program_link(program, degree):
     """
     Get link of the program and degree pair
 
@@ -274,6 +311,52 @@ def program_link(program, degree):
 
     if url == "https://catalog.gatech.edu/programs/":
         print("Program or degree not found")
+        return
+
+    return url
+
+
+def _concentration_link(program, degree, concentration):
+    """
+    Get link of the program, degree and concentration combination
+
+    :param program: program name
+    :param degree: degree type
+    :param concentration: concentration type
+    :return: URL of the program
+    """
+    program_url = _program_link(program, degree)
+
+    if program_url is None:
+        return
+
+    page = requests.get(program_url)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    if soup.find(id="concentrationstextcontainer"):
+        div = soup.find(id="concentrationstextcontainer")
+    elif soup.find(id="standardandconcentrationoptiontextcontainer"):
+        div = soup.find(id="standardandconcentrationoptiontextcontainer")
+    elif soup.find(id="threadstextcontainer"):
+        div = soup.find(id="threadstextcontainer")
+    else:
+        print("Program/Degree doesn't have concentrations/threads")
+        return
+
+    url = main_url
+
+    for a in div.find_all("a"):
+        if a.text == "":
+            continue
+
+        curr_concentration = a.text
+
+        if curr_concentration == concentration:
+            url += a['href'][10:]
+            break
+
+    if url == "https://catalog.gatech.edu/programs/":
+        print("Concentration not found")
         return
 
     return url

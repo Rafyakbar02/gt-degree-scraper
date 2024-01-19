@@ -1,3 +1,5 @@
-from degreescraper import get_concentrations
+from bs4 import BeautifulSoup
+import requests
+from degreescraper import get_courses
 
-print(get_concentrations("Biochemistry", "BS"))
+print(get_courses("Computer Science", "BS", "Intelligence & Information Internetworks"))
