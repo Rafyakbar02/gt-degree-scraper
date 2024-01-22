@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-
+import pandas as pd
 
 main_url = "https://catalog.gatech.edu/programs/"
 masters = ["MS", "PMASE", "M.Arch", "MBID", "MBA", "MCRP", "M.ID", "PMML", "MS (undesignated)", "PMOSH", "MRED",
@@ -52,8 +52,6 @@ def get_concentrations(program, degree):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
 
-    div = None
-
     if soup.find(id="concentrationstextcontainer"):
         div = soup.find(id="concentrationstextcontainer")
     elif soup.find(id="standardandconcentrationoptiontextcontainer"):
@@ -74,44 +72,7 @@ def get_concentrations(program, degree):
     return concentrations
 
 
-def get_courses(program, degree):
-    """
-    Get list of possible courses that can be taken to fulfill degree requirement
-
-    :param program: program name
-    :param degree: degree name
-    :return: list of courses
-    """
-    url = _program_link(program, degree)
-
-    if url is None:
-        return
-
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, "html.parser")
-    tbody = soup.find('tbody')
-
-    if tbody is None:
-        print("Not implemented")
-        return
-
-    courses = []
-
-    for tr in tbody.find_all('tr'):
-        if 'areaheader' in tr['class']:
-            continue
-
-        course_code = tr.find('a')
-
-        if course_code is None:
-            continue
-
-        courses.append(course_code.text.replace("\xa0", " "))
-
-    return courses
-
-
-def get_courses(program, degree, concentration):
+def get_courses(program, degree, concentration=None):
     """
     Get list of possible courses that can be taken to fulfill degree requirement with the specified concentration
 
@@ -120,7 +81,10 @@ def get_courses(program, degree, concentration):
     :param concentration: concentration name
     :return: list of courses
     """
-    url = _concentration_link(program, degree, concentration)
+    if concentration is None:
+        url = _program_link(program, degree)
+    else:
+        url = _concentration_link(program, degree, concentration)
 
     if url is None:
         return
@@ -133,7 +97,10 @@ def get_courses(program, degree, concentration):
         print("Not implemented")
         return
 
-    courses = []
+    courses = {}
+    course_codes = []
+    course_names = []
+    course_credits = []
 
     for tr in tbody.find_all('tr'):
         if 'areaheader' in tr['class']:
@@ -144,9 +111,28 @@ def get_courses(program, degree, concentration):
         if course_code is None:
             continue
 
-        courses.append(course_code.text.replace("\xa0", " "))
+        tds = tr.find_all('td')
+        if len(tds) <= 2:
+            continue
 
-    return courses
+        curr_code = tds[0].text.replace("\xa0", " ")
+        curr_name = tds[1].text
+        curr_credit = tds[2].text
+
+        course_codes.append(curr_code)
+        course_names.append(curr_name)
+        course_credits.append(curr_credit)
+
+        #courses.append(course_code.text.replace("\xa0", " "))
+
+    courses['Course Code'] = course_codes
+    courses['Name'] = course_names
+    courses['Credits'] = course_credits
+
+    df = pd.DataFrame(courses)
+
+    #return courses
+    print(df)
 
 
 def _simple_degree(link):
@@ -253,22 +239,30 @@ def get_minors_programs():
     return programs
 
 
-def get_total_credit_hours(program, degree):
+def get_total_credit_hours(program, degree, concentration=None):
     """
     Get total credit hours required to complete the program degree requirement
 
     :param program: program name
     :param degree: degree type
+    :param concentration: concentration type
     :return: amount of credit hours
     """
-
-    url = _program_link(program, degree)
+    if concentration is None:
+        url = _program_link(program, degree)
+    else:
+        url = _concentration_link(program, degree, concentration)
 
     if url is None:
         return
 
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
+    tbody = soup.find('tbody')
+
+    if tbody is None:
+        print("Not valid")
+
     tr = soup.find_all('tr', {"class": "listsum"})[0]
     hour = tr.find_all('td')[1].text
 
@@ -349,7 +343,10 @@ def _concentration_link(program, degree, concentration):
         if a.text == "":
             continue
 
-        curr_concentration = a.text
+        if a.text[-1] == " ":
+            curr_concentration = a.text[:-1]
+        else:
+            curr_concentration = a.text
 
         if curr_concentration == concentration:
             url += a['href'][10:]
