@@ -229,32 +229,6 @@ def get_doctoral_programs():
     return df
 
 
-def get_minors_programs():
-    """
-    Get list of all minors programs currently offered in Georgia Institute of Technology
-
-    :return: list of minors programs
-    """
-
-    page = requests.get(main_url)
-    soup = BeautifulSoup(page.content, "html.parser")
-    div = soup.find(id="minorstextcontainer")
-
-    dict = {}
-    programs = []
-
-    for li in div.find_all("li"):
-        curr_link = li.text
-        end = curr_link.find('.')
-        major = curr_link[:end]
-        programs.append(major)
-
-    dict["Program"] = programs
-    df = pd.DataFrame(dict)
-
-    return df
-
-
 def get_total_credit_hours(program, degree, concentration=None):
     """
     Get total credit hours required to complete the program degree requirement
