@@ -18,22 +18,19 @@ def get_all_programs():
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="alltextcontainer")
 
-    programs = {}
+    dict = {}
+    programs = []
 
     for li in div.find_all("li"):
         curr_link = li.text
         end = curr_link.find('.')
         major = curr_link[:end]
+        programs.append(major)
 
-        college_degrees = []
+    dict["Program"] = programs
+    df = pd.DataFrame(dict)
 
-        for a in li.find_all("a"):
-            course_level = a.text
-            college_degrees.append(course_level)
-
-        programs[major] = college_degrees
-
-    return programs
+    return df
 
 
 def get_concentrations(program, degree):
@@ -62,6 +59,7 @@ def get_concentrations(program, degree):
         print("Program and degree pair doesn't have concentrations/threads")
         return
 
+    dict = {}
     concentrations = []
 
     for a in div.find_all("a"):
@@ -69,7 +67,10 @@ def get_concentrations(program, degree):
             continue
         concentrations.append(a.text)
 
-    return concentrations
+    dict["Concentration"] = concentrations
+    df = pd.DataFrame(dict)
+
+    return df
 
 
 def get_courses(program, degree, concentration=None):
@@ -108,8 +109,8 @@ def get_courses(program, degree, concentration=None):
 
         course_code = tr.find('a')
 
-        if course_code is None:
-            continue
+        # if course_code is None:
+        #     continue
 
         tds = tr.find_all('td')
         if len(tds) <= 2:
@@ -131,8 +132,7 @@ def get_courses(program, degree, concentration=None):
 
     df = pd.DataFrame(courses)
 
-    #return courses
-    print(df)
+    return df
 
 
 def _simple_degree(link):
@@ -162,6 +162,7 @@ def get_bachelors_programs():
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="bachelorstextcontainer")
 
+    dict = {}
     programs = []
 
     for li in div.find_all("li"):
@@ -170,7 +171,10 @@ def get_bachelors_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    return programs
+    dict["Program"] = programs
+    df = pd.DataFrame(dict)
+
+    return df
 
 
 def get_masters_programs():
@@ -184,6 +188,7 @@ def get_masters_programs():
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="masterstextcontainer")
 
+    dict = {}
     programs = []
 
     for li in div.find_all("li"):
@@ -192,7 +197,10 @@ def get_masters_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    return programs
+    dict["Program"] = programs
+    df = pd.DataFrame(dict)
+
+    return df
 
 
 def get_doctoral_programs():
@@ -206,6 +214,7 @@ def get_doctoral_programs():
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="doctoraltextcontainer")
 
+    dict = {}
     programs = []
 
     for li in div.find_all("li"):
@@ -214,7 +223,10 @@ def get_doctoral_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    return programs
+    dict["Program"] = programs
+    df = pd.DataFrame(dict)
+
+    return df
 
 
 def get_minors_programs():
@@ -228,6 +240,7 @@ def get_minors_programs():
     soup = BeautifulSoup(page.content, "html.parser")
     div = soup.find(id="minorstextcontainer")
 
+    dict = {}
     programs = []
 
     for li in div.find_all("li"):
@@ -236,7 +249,10 @@ def get_minors_programs():
         major = curr_link[:end]
         programs.append(major)
 
-    return programs
+    dict["Program"] = programs
+    df = pd.DataFrame(dict)
+
+    return df
 
 
 def get_total_credit_hours(program, degree, concentration=None):
