@@ -82,6 +82,94 @@ def get_courses(program, degree, concentration=None):
     :param concentration: concentration name
     :return: list of courses
     """
+    # if concentration is None:
+    #     url = _program_link(program, degree)
+    # else:
+    #     url = _concentration_link(program, degree, concentration)
+    #
+    # if url is None:
+    #     return
+    #
+    # page = requests.get(url)
+    # soup = BeautifulSoup(page.content, "html.parser")
+    # tbody = soup.find('tbody')
+    #
+    # curr_category = ""
+    # prev_credits = 0
+    #
+    # dict = {}
+    # codes = []
+    # categories = []
+    # credits = []
+    #
+    # # Loop all rows in the table
+    # for tr in tbody.find_all("tr"):
+    #     # Store current category
+    #     if 'areaheader' in tr['class']:
+    #         curr_category = tr.text
+    #         continue
+    #
+    #     # Check if row contains a course
+    #     if tr.find("a", {"class": "bubblelink"}):
+    #         curr_code = tr.a.text.replace("\xa0", " ")
+    #         codes.append(curr_code)
+    #         categories.append(curr_category)
+    #
+    #         hourscol = tr.find("td", {"class": "hourscol"})
+    #
+    #         if hourscol is None or hourscol.text == "":
+    #             credits.append(prev_credits)
+    #         else:
+    #             hours = int(hourscol.text)
+    #             credits.append(hours)
+    #             prev_credits = hours
+    #
+    #     # Check if it's a flexible choice of courses
+    #     elif tr.find("span", {"class": "courselistcomment"}):
+    #         if 'Select' in tr.text:
+    #             hourscol = tr.find("td", {"class": "hourscol"})
+    #             hours = int(hourscol.text)
+    #
+    #             if hours > 4:
+    #                 if hours % 3 == 0:
+    #                     prev_credits = 3
+    #                 elif hours % 4 == 0:
+    #                     prev_credits = 4
+    #             else:
+    #                 prev_credits = hours
+    #
+    #             continue
+    #
+    #         curr_code = tr.span.text.strip()
+    #         codes.append(curr_code)
+    #         categories.append(curr_category)
+    #
+    #         hourscol = tr.find("td", {"class": "hourscol"})
+    #
+    #         if hourscol is None or hourscol.text == "":
+    #             credits.append(prev_credits)
+    #         else:
+    #             hours = int(hourscol.text)
+    #             credits.append(hours)
+    #             prev_credits = hours
+    #
+    # dict["Course"] = codes
+    # dict["Category"] = categories
+    # dict["Credits"] = credits
+    # df = pd.DataFrame(dict)
+    #
+    # return df
+
+
+def get_degree_overview(program, degree, concentration=None):
+    """
+        Get an overview of the degree requirements
+
+        :param program: program name
+        :param degree: degree name
+        :param concentration: concentration name
+        :return: list of categories
+        """
     if concentration is None:
         url = _program_link(program, degree)
     else:
@@ -92,45 +180,37 @@ def get_courses(program, degree, concentration=None):
 
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    tbody = soup.find('tbody')
 
-    if tbody is None:
-        print("Not implemented")
-        return
+    credits_total = 0
+    categories = []
+    credits = []
 
-    courses = {}
-    course_codes = []
-    course_names = []
-    course_credits = []
+    for tr in soup.tbody.find_all("tr"):
+        if "areaheader" in tr['class']:
+            category = tr.span.text
+            categories.append(category)
 
-    for tr in tbody.find_all('tr'):
-        if 'areaheader' in tr['class']:
+            if "firstrow" not in tr['class']:
+                credits.append(credits_total)
+                credits_total = 0
+
             continue
 
-        course_code = tr.find('a')
+        if tr.find("td", {"class": "hourscol"}):
+            hourscol = tr.find("td", {"class": "hourscol"})
 
-        # if course_code is None:
-        #     continue
+            if hourscol is None or hourscol.text == "":
+                continue
 
-        tds = tr.find_all('td')
-        if len(tds) <= 2:
-            continue
+            hours = int(hourscol.text)
+            credits_total += hours
 
-        curr_code = tds[0].text.replace("\xa0", " ")
-        curr_name = tds[1].text
-        curr_credit = tds[2].text
+        if "lastrow" in tr['class']:
+            credits.append(credits_total)
+            break
 
-        course_codes.append(curr_code)
-        course_names.append(curr_name)
-        course_credits.append(curr_credit)
-
-        #courses.append(course_code.text.replace("\xa0", " "))
-
-    courses['Course Code'] = course_codes
-    courses['Name'] = course_names
-    courses['Credits'] = course_credits
-
-    df = pd.DataFrame(courses)
+    dict = {"Categories": categories, "Credits": credits}
+    df = pd.DataFrame(dict)
 
     return df
 
